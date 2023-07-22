@@ -1,16 +1,13 @@
 const knex = require('../database/config/db');
 
-const getUser = async (data) => {
-  const userExist = await knex
-    .select('user')
-    .from('users')
-    .where({ email: data.email, password: data.password })
-    .first();
-
+// Obtiene los datos de los usuarios
+const getUsers = async () => {
+  const userExist = await knex.select('*').from('users');
   return userExist;
 };
 
-const findUser = async (data) => {
+// Verifica que exista el mail
+const findUserByEmail = async (data) => {
   const userExists = await knex
     .select('*')
     .from('users')
@@ -20,6 +17,7 @@ const findUser = async (data) => {
   return userExists;
 };
 
+// Crea un usuario
 const createUser = async (data) => {
   const newUser = await knex
     .insert({
@@ -33,4 +31,4 @@ const createUser = async (data) => {
   return newUser;
 };
 
-module.exports = { getUser, findUser, createUser };
+module.exports = { getUsers, findUserByEmail, createUser };

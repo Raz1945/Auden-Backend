@@ -4,22 +4,26 @@ const { body, validationResult } = require('express-validator');
 const userModel = require('../models/userServices');
 const userService = require('../models/userServices');
 
-
-exports.getUsersWithoutSensitiveInfo = async (_, res) => {
+// Para ver los usuarios creados y su respectiva informacion
+exports.getInfoUser = async (_, res) => {
   try {
-    const allUsers = await userService.getUser();
-    const UserWithoutSensitiveInfo = allUsers.map(({ email, user }) => {
+    const users = await userService.getUsers();
+
+    if (!users || users.length === 0) {
+      return res.status(404).json({ message: 'No se encontraron usuarios.' });
+    }
+    const usersFiltered = users.map(({ email, user }) => {
       return { email, user };
     });
 
-    res.json(UserWithoutSensitiveInfo);
+    res.json(usersFiltered);
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener los datos solicitados.' });
   }
 };
 
-
+// De momento solo se loguea con el mail
 exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
@@ -50,12 +54,10 @@ exports.login = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const data = {
-      email: email,
-    };
+    const data = { email: email };
 
     // Encuentro el usuario
-    const user = await userModel.findUser(data); //? Se usa data y no email, para respetar la query
+    const user = await userModel.findUserByEmail(data); //? Se usa data y no email, para respetar la query
     if (user) {
       // Verificar si las contraseñas coinciden
       const match = await bcrypt.compare(password, user.password);
@@ -75,22 +77,24 @@ exports.login = async (req, res) => {
       }
     }
 
-    return res.status(401).send('Usuario y/o clave inválida.');
+    return res.status(401).json({ message: 'Usuario y/o clave inválida.' });
   } catch (error) {
     console.error(error);
     res.status(500).json({ error: 'Error al obtener los datos solicitados.' });
   }
 };
 
-exports.create = async (req, res) => {
+exports.register = async (req, res) => {
   try {
     const { email, user, password, repassword } = req.body;
 
+    // Valido que las constraseñas sean iguales
     if (password !== repassword) {
       return res
         .status(400)
         .json({ error: 'Las contraseñas deben ser iguales' });
     }
+
     // Validaciones de entrada
     await Promise.all([
       body('email')
@@ -109,6 +113,8 @@ exports.create = async (req, res) => {
       body('password')
         .notEmpty()
         .withMessage('El campo de contraseña no puede estar vacío')
+        .isLength({ min: 8 })
+        .withMessage('La contraseña debe tener al menos 8 caracteres')
         .run(req),
     ]);
     const errors = validationResult(req);
@@ -117,7 +123,7 @@ exports.create = async (req, res) => {
     }
 
     // Compruebo si existe el usuario.
-    const existingUser = await userModel.findUser({ email });
+    const existingUser = await userModel.findUserByEmail({ email });
     if (existingUser) {
       console.log('El usuario ya existe.');
       return res.status(400).json({ error: 'Error al crear el usuario.' });
@@ -127,7 +133,7 @@ exports.create = async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const encriptedPassword = await bcrypt.hash(password, salt);
 
-    console.log('Salt::', salt); //! borrar
+    console.log('Salt:', salt); //! borrar
     console.log('La contraseña es:', encriptedPassword); //! borrar
 
     const data = {
@@ -144,4 +150,67 @@ exports.create = async (req, res) => {
     console.error(error);
     res.status(500).json({ error: 'Error al crear el usuario.' });
   }
+};
+
+// * Ver si tiene que funcionar, ya que deberai de enviar un mail con una claver
+exports.forgotPassword = async (req, res) => {
+  try {
+    const { email, password, repassword } = req.body;
+
+    // Valido que las constraseñas sean iguales
+    if (password !== repassword) {
+      return res
+        .status(400)
+        .json({ error: 'Las contraseñas deben ser iguales' });
+    }
+
+    // Validaciones de entrada
+    await Promise.all([
+      body('email')
+        .notEmpty()
+        .withMessage('El campo de correo electrónico no puede estar vacío')
+        .isEmail()
+        .withMessage(
+          'El campo de correo electrónico debe ser una dirección de correo válida'
+        )
+        .normalizeEmail()
+        .withMessage(
+          'El campo de correo electrónico debe estar en un formato válido'
+        )
+        .run(req),
+
+      body('password')
+        .notEmpty()
+        .withMessage('El campo de contraseña no puede estar vacío')
+        .isLength({ min: 8 })
+        .withMessage('La contraseña debe tener al menos 8 caracteres')
+        .run(req),
+    ]);
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    // Compruebo si existe el usuario.
+    const existingUser = await userModel.findUserByEmail({ email });
+    if (existingUser) {
+      console.log('El usuario ya existe.');
+      return res.status(400).json({ error: 'Error al crear el usuario.' });
+    }
+
+    // Encripto el password
+    const salt = await bcrypt.genSalt(10);
+    const encriptedPassword = await bcrypt.hash(password, salt);
+
+    const data = {
+      email: email,
+      user: user,
+      password: encriptedPassword,
+    };
+
+    const newUser = await userModel.createUser(data);
+
+    const message = 'El registro ha sido actualizado con éxito';
+    res.json({ message, newUser }); //! Borrar el newUser
+  } catch (error) {}
 };

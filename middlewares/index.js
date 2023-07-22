@@ -10,9 +10,9 @@ router.use((req, _res, next) => {
   next();
 });
 
-router.use((err, _req, res, _next) => {
-  console.error(err);
-  res.status(500).send('\x1b[31m\x1b[0m','Something broke!');
+router.use((error, _req, res, _next) => {
+  console.error(error);
+  res.status(500).json({'error':'Something broke!'});
 });
 
 // Retraso de 1 seg antes de pasar a otro middlewares o controlador

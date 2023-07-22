@@ -2,11 +2,12 @@ const jwt = require('jsonwebtoken');
 
 const verifyToken = (req, res, next) => {
   // Obtener el token de la solicitud
-  const token = req.body.token || req.query.token || req.headers['x-access-token'];
+  const token =
+    req.body.token || req.query.token || req.headers['x-access-token'];
 
   // Verificar si el token existe
   if (!token) {
-    return res.status(401).send('Acceso denegado.');
+    return res.status(401).json({message:'Acceso denegado.'});
   }
 
   try {
@@ -20,7 +21,7 @@ const verifyToken = (req, res, next) => {
     next();
   } catch (error) {
     console.error(error);
-    return res.status(400).send('El token no es válido.');
+    return res.status(401).json({ error: 'El token no es válido.' });
   }
 };
 
