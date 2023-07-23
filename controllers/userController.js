@@ -72,8 +72,19 @@ exports.login = async (req, res) => {
             expiresIn: process.env.JWT_EXPIRATION_TIME,
           }
         );
-        // Enviar el token en la respuesta
-        return res.json({ accessToken });
+        // Respuesta exitosa del servidor
+        console.log('Inicio de sesión exitoso para el usuario:', user.email);
+
+        return res.status(200).json({
+          message: 'Inicio de sesión exitoso',
+          user: {
+            id: user.id,
+            email: user.email,
+            // Otros datos del usuario que se quiera enviar
+          },
+          // Enviar el token en la respuestaF
+          accessToken,
+        });
       }
     }
 
