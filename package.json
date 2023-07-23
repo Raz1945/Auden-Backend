@@ -2,7 +2,7 @@
   "name": "backend_auden",
   "version": "1.0.0",
   "description": "Backend del proyecto final",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "dev": "nodemon app.js",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -11,14 +11,14 @@
     "type": "git",
     "url": "git+https://github.com/Raz1945/Auden-Backend.git"
   },
-  "author": "",
+  "author": "Gonzalo Sanchez",
   "license": "ISC",
   "bugs": {
     "url": "https://github.com/Raz1945/Auden-Backend/issues"
   },
   "homepage": "https://github.com/Raz1945/Auden-Backend#readme",
   "dependencies": {
-    "bcryptjs": "^2.4.3",
+    "bcrypt": "^5.1.0",
     "cors": "^2.8.5",
     "dotenv": "^16.3.1",
     "express": "^4.18.2",
