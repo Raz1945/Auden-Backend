@@ -82,7 +82,7 @@ exports.login = async (req, res) => {
             email: user.email,
             // Otros datos del usuario que se quiera enviar
           },
-          // Enviar el token en la respuestaF
+          // Enviar el token en la respuesta
           accessToken,
         });
       }
@@ -97,14 +97,15 @@ exports.login = async (req, res) => {
 
 exports.register = async (req, res) => {
   try {
-    const { email, user, password, repassword } = req.body;
-
-    // Valido que las constraseñas sean iguales
-    if (password !== repassword) {
-      return res
-        .status(400)
-        .json({ error: 'Las contraseñas deben ser iguales' });
-    }
+    
+    const { email, user, password } = req.body;
+    // Valido que las constraseñas sean iguales, en este caso no es necesario validar 
+    // const { email, user, password, repassword } = req.body;
+    // if (password !== repassword) {
+    //   return res
+    //     .status(400)
+    //     .json({ error: 'Las contraseñas deben ser iguales' });
+    // }
 
     // Validaciones de entrada
     await Promise.all([
@@ -163,7 +164,7 @@ exports.register = async (req, res) => {
   }
 };
 
-// * Ver si tiene que funcionar, ya que deberai de enviar un mail con una claver
+//! Ver si tiene que funcionar, ya que deberai de enviar un mail con una calve
 exports.forgotPassword = async (req, res) => {
   try {
     const { email, password, repassword } = req.body;

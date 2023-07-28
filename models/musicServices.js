@@ -1,10 +1,6 @@
 const knex = require('../database/config/db');
 
 //=== Info ===//
-// Muesto todas las canciones de la base de datos.
-const getAllSongs = () => {
-  return knex.select('*').from('songs');
-};
 // Muestro las playlist y su contenido segun de un usuario especifico.
 const getUserPlaylistData = async (id) => {
   const result = await knex
@@ -12,9 +8,16 @@ const getUserPlaylistData = async (id) => {
       user: 'us.user',
       playlist: 'pl.name',
     })
-    .column('pl.id as playlist_id', 'ps.song_id', 'so.title', 'so.duration', 'so.artist', 'so.rating')
+    .column(
+      'pl.id as playlist_id',
+      'ps.song_id',
+      'so.title',
+      'so.duration',
+      'so.artist',
+      'so.rating'
+    )
     .from('playlists as pl')
-    .leftJoin('playlist_song as ps', 'pl.id', 'ps.playlist_id') 
+    .leftJoin('playlist_song as ps', 'pl.id', 'ps.playlist_id')
     .leftJoin('songs as so', 'ps.song_id', 'so.id')
     .join('users as us', 'pl.user_id', 'us.id')
     .where('us.id', id)
@@ -23,8 +26,28 @@ const getUserPlaylistData = async (id) => {
   return result;
 };
 
-
 //=== Songs ===//
+// Muesto todas las canciones de la base de datos.
+const getAllSongs = () => {
+  return knex.select('*').from('songs');
+};
+// Realiza una busqueda
+const searchSongs = async (search) => {
+  try {
+    // console.log('Valor de búsqueda:', search); 
+    const songs = await knex.select('*')
+      .from('songs')
+      .where('title', 'ilike', `%${search}%`)
+      .orWhere('artist', 'ilike', `%${search}%`);
+
+    // console.log('Resultado de la consulta:', songs);
+    return songs;
+  } catch (error) {
+    console.error('Error al realizar la búsqueda de canciones:', error); // Agrega un mensaje de error en caso de que ocurra un error
+    throw new Error('Error al realizar la búsqueda de canciones.');
+  }
+};
+
 // Agrega una canción a la Playlist.
 const addSongToPlaylist = async (song_id, playlist_id) => {
   await knex('playlist_song').insert({
@@ -44,12 +67,11 @@ const removeSongFromPlaylist = (song_id, playlist_id) => {
 // Agrega una playlist a un usuario especifico.
 const addPlaylist = (id, playlist_name) => {
   return knex('playlists')
-  .insert({
-    user_id: id,
-    name: playlist_name,
-  })
-  .returning('id') // Especificamos que queremos obtener el ID generado
-  ;
+    .insert({
+      user_id: id,
+      name: playlist_name,
+    })
+    .returning('id'); // Especificamos que queremos obtener el ID generado
 };
 // Elimina una playlist.
 const removePlaylist = async (id, playlist_id) => {
@@ -85,8 +107,9 @@ const isSongAddedInPlaylist = async (song_id, playlist_id) => {
 };
 
 module.exports = {
-  getAllSongs,
   getUserPlaylistData,
+  getAllSongs,
+  searchSongs,
   doesPlaylistExist,
   doesSongExist,
   isSongAddedInPlaylist,

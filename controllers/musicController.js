@@ -1,12 +1,22 @@
 const musicModel = require('../models/musicServices');
 
-// Obtiene una lista con todas las canciones
-exports.getAllSongs = async (_req, res) => {
+// Obtiene una lista con todas las canciones o filtra por término de búsqueda
+exports.getAllSongs = async (req, res) => {
   try {
-    const all = await musicModel.getAllSongs();
-    const allMusic = all.map(({ artist, title, duration, genre, rating }) => {
-      return { title, artist, duration, rating, genre };
-    });
+    const { search } = req.query;
+    let all;
+
+    // Condicion de busqueda
+    search
+      ? (all = await musicModel.searchSongs(search))
+      : (all = await musicModel.getAllSongs());
+
+    // Filtro los datos obtenidos
+    const allMusic = all.map(
+      ({ id, artist, title, duration, genre, rating }) => {
+        return { id, title, artist, duration, rating, genre };
+      }
+    );
 
     res.json(allMusic);
   } catch (error) {
@@ -22,11 +32,11 @@ exports.getUserPlaylist = async (req, res) => {
 
     const data = await musicModel.getUserPlaylistData(id);
 
-    console.log(data[0]?.user ?? 'No existe ningina playlist');
-    console.log(data);
+    // console.log(data[0]?.user ?? 'No existe ningina playlist');
+    // console.log(data);
 
     if (data.length < 1) {
-      console.log(data);
+      // console.log(data);
       return res.json({ playlists: [] });
     }
 
@@ -55,7 +65,7 @@ exports.getUserPlaylist = async (req, res) => {
       let playlistIndex = acc[user].playlists.findIndex(
         (pl) => pl.id === playlist_id
       );
-      console.log(playlist_id);
+      // console.log(playlist_id);
 
       // Si la lista de reproducción actual no está en el acumulador, agregarla con una lista de canciones vacía
       if (playlistIndex === -1) {
@@ -241,8 +251,6 @@ exports.removePlaylistToUser = async (req, res) => {
 
     // Elimina la playlists indicada
     await musicModel.removePlaylist(id, playlist_id);
-    
-
 
     return res.json({ message: 'El registro eliminado con éxito.' });
   } catch (error) {
