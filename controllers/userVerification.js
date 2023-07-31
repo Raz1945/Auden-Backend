@@ -9,7 +9,11 @@ const mostrarUsuariosRegistrados = async () => {
     } else {
       console.log('Usuarios registrados en la base de datos:');
       users.forEach((user) => {
+<<<<<<< Updated upstream
         console.log('ID :', user.id);
+=======
+        console.log('ID:', user.id);
+>>>>>>> Stashed changes
         console.log('Nombre:', user.user);
         console.log('Email:', user.email);
         console.log('password:', user.password);
