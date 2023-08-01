@@ -26,4 +26,9 @@ router.post('/login', userController.login);
 router.post('/register', userController.register);
 // router.post('/forgot-password', userController.forgotPassword);
 
+router.post('/checkUsernameAvailability', userController.checkUsernameAvailability);
+
 module.exports = router;
+
+
+
