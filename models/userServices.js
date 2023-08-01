@@ -16,6 +16,15 @@ const findUserByEmail = async (data) => {
 
   return userExists;
 };
+const findUserByName = async (data) => {
+  const userExists = await knex
+    .select('*')
+    .from('users')
+    .where('name', data.name)
+    .first();
+
+  return userExists;
+};
 
 // Crea un usuario
 const createUser = async (data) => {
@@ -31,4 +40,4 @@ const createUser = async (data) => {
   return newUser;
 };
 
-module.exports = { getUsers, findUserByEmail, createUser };
+module.exports = { getUsers, findUserByEmail, createUser,findUserByName };

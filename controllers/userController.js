@@ -225,4 +225,25 @@ exports.forgotPassword = async (req, res) => {
     const message = 'El registro ha sido actualizado con éxito';
     res.json({ message, newUser }); //! Borrar el newUser
   } catch (error) {}
+  
 };
+exports.checkUsernameAvailability = async (req, res) => {
+  try {
+    const { name } = req.body;
+    const data = {name:name}
+    const user = await userModel.findUserByName({ data });
+
+    if (user) {
+      res.json({ available: false }); // Si el usuario existe, no está disponible
+    } else {
+      res.json({ available: true }); // Si el usuario no existe, está disponible
+    }
+  } catch (error) {
+    console.error('Error al verificar disponibilidad del nombre:', error);
+    res.status(500).json({ error: 'Error al verificar disponibilidad del nombre' });
+  }
+};
+const verificarUsuariosRegistrados = require('./userVerification');
+
+// Llama a la función para realizar la verificación
+verificarUsuariosRegistrados() /* esto hace que aparescan los usuarios en la terminal */
